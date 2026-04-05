@@ -87,7 +87,7 @@ const Footer = () => {
           </p>
           <div className="flex items-center gap-4 mt-3">
             <a
-              href="https://adarsh-sugandhe.vercel.app"
+              href="https://github.com/MohdAinul"
               target="_blank"
               rel="noreferrer"
             >
@@ -111,7 +111,7 @@ const Footer = () => {
               </svg>
             </a>
             <a
-              href="https://www.linkedin.com/in/adarsh-sugandhe"
+              href="https://www.linkedin.com/in/mohd-ainul-27492b27a/"
               target="_blank"
               rel="noreferrer"
             >
@@ -169,7 +169,7 @@ const Footer = () => {
               </svg>
             </a>
           </div>
-          <p className="mt-3 text-center">© 2025 Resume Builder</p>
+          <p className="mt-3 text-center">© 2026 Resume Builder</p>
         </div>
       </footer>
       <style>
