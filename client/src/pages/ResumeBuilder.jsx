@@ -1,5 +1,3 @@
-import React from "react";
-import { dummyResumeData } from "../assets/assets";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
@@ -18,9 +16,20 @@ import {
   User,
   Award,
 } from "lucide-react";
+import PersonalInfoForm from "../components/PersonalInfoForm";
+import ResumePreview from "../components/ResumePreview";
+//import TemplateSelector from "../components/TemplateSelector";
+import ColorPicker from "../components/ColorPicker";
+import ProfessionalSummaryForm from "../components/ProfessionalSummaryForm";
+import ExperienceForm from "../components/ExperienceForm";
+//import EducationForm from "../components/EducationForm";
+//import ProjectForm from "../components/ProjectForm";
+//import SkillsForm from "../components/SkillsForm";
+//import CertificationForm from "../components/CertificationForm";
 
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
+  const { token } = useSelector((state) => state.auth);
 
   const [resumeData, setResumeData] = useState({
     _id: "",
@@ -30,21 +39,13 @@ const ResumeBuilder = () => {
     experience: [],
     education: [],
     project: [],
-    skills: [],
+    skill: [],
     template: "classic",
     accent_color: "#3b82f6",
     public: false,
   });
-
-  const loadExistingResume = async () => {
-    const resume = dummyResumeData.find((resume) => resume._id === resumeId);
-    if (resume) {
-      setResumeData(resume);
-      document.title = resume.title;
-    }
-  };
-
   const [activeSectionIndex, setactiveSectionIndex] = useState(0);
+  const [removeBackground, setRemoveBackground] = useState(false);
 
   const sections = [
     { id: "personal", name: "personal Info", icon: User },
@@ -55,58 +56,137 @@ const ResumeBuilder = () => {
     { id: "skills", name: "Skills", icon: Sparkles },
     { id: "certification", name: "Certification", icon: Award },
   ];
+
   const activeSection = sections[activeSectionIndex];
+
+  const loadExistingResume = async () => {
+    try {
+      const { data } = await api.get("/api/resumes/get/" + resumeId, {
+        headers: { Authorization: token },
+      });
+
+      if (data.resume) {
+        setResumeData(data.resume);
+        document.title = data.resume.title;
+      }
+    } catch (error) {
+      console.error("Error saving resume:", error);
+    }
+  };
+
+  const changeResumeVisibility = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("resumeId", resumeId);
+      formData.append(
+        "resumeData",
+        JSON.stringify({ public: !resumeData.public }),
+      );
+
+      const { data } = await api.put("/api/resumes/update", formData, {
+        headers: { Authorization: token },
+      });
+
+      setResumeData({ ...resumeData, public: !resumeData.public });
+
+      toast.success(data.message);
+    } catch (error) {
+      console.error("Error saving resume:", error);
+    }
+  };
+
+  const handleShare = () => {
+    const frontendUrl = window.location.href.split("/app/")[0];
+    const resumeUrl = frontendUrl + "/view/" + resumeId;
+
+    if (navigator.share) {
+      navigator.share({ url: resumeUrl, text: "My Resume" });
+    } else {
+      alert("Share not supported on this borwser.");
+    }
+  };
+
+  const downloadResume = () => {
+    window.print();
+  };
+
+  const saveResume = async () => {
+    try {
+      let updatedResumeData = structuredClone(resumeData);
+
+      if (typeof resumeData.personal_info.image === "object") {
+        delete updatedResumeData.personal_info.image;
+      }
+
+      const formData = new FormData();
+      formData.append("resumeId", resumeId);
+      formData.append("resumeData", JSON.stringify(updatedResumeData));
+
+      removeBackground && formData.append("removeBackground", "yes");
+      typeof resumeData.personal_info.image === "object" &&
+        formData.append("image", resumeData.personal_info.image);
+
+      const { data } = await api.put("/api/resumes/update", formData, {
+        headers: { Authorization: token },
+      });
+
+      setResumeData(data.resume);
+      toast.success(data.message);
+    } catch (error) {
+      console.error("Error saving resume:", error);
+    }
+  };
+
   useEffect(() => {
     loadExistingResume();
   }, []);
 
   return (
     <div>
-      <div>
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <Link
-            to="/app"
-            className="inline-flex gap-2 items-center text-slate-500 hover:text-slate-700 transition-all"
-          >
-            <ArrowLeftIcon className="size-4" /> Back to Dashboard
-          </Link>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 pb-8">
-          <div className="grid lg:grid-cols-12 gap-8">
-            {/* Left Panel - Form */}
-            <div className="relative lg:col-span-5 rounded-lg overflow-hidden">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 pt-1">
-                {/* Progress bar using activeSectionIndex */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <Link
+          to="/app"
+          className="inline-flex gap-2 items-center text-slate-500 hover:text-slate-700 transition-all"
+        >
+          <ArrowLeftIcon className="size-4" /> Back to Dashboard
+        </Link>
+      </div>
 
-                <hr className="absolute top-0 left-0 right-0 border-2 border-gray-200" />
-                <hr
-                  className="absolute top-0 left-0 h-1 bg-linear-to-br from-green-500 to-green-600 border-none transition-all duration-2000"
-                  style={{
-                    width: `${
-                      (activeSectionIndex * 100) / (sections.length - 1)
-                    }%`,
-                  }}
-                />
+      <div className="max-w-7xl mx-auto px-4 pb-8">
+        <div className="grid lg:grid-cols-12 gap-8">
+          {/* Left Panel - Form */}
+          <div className="relative lg:col-span-5 rounded-lg overflow-hidden">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 pt-1">
+              {/* Progress bar using activeSectionIndex */}
 
-                {/* Section Navigation */}
-                <div className="flex justify-between items-center mb-6 border-b border-gray-300 py-1">
-                  <div className="flex items-center gap-2">
-                    <TemplateSelector
-                      selectedTemplate={resumeData.template}
-                      onChange={(template) =>
-                        setResumeData((prev) => ({ ...prev, template }))
-                      }
-                    />
-                    <ColorPicker
-                      selectedColor={resumeData.accent_color}
-                      onChange={(color) =>
-                        setResumeData((prev) => ({
-                          ...prev,
-                          accent_color: color,
-                        }))
-                      }
-                    />
-                  </div>
+              <hr className="absolute top-0 left-0 right-0 border-2 border-gray-200" />
+              <hr
+                className="absolute top-0 left-0 h-1 bg-linear-to-br from-green-500 to-green-600 border-none transition-all duration-2000"
+                style={{
+                  width: `${
+                    (activeSectionIndex * 100) / (sections.length - 1)
+                  }%`,
+                }}
+              />
+
+              {/* Section Navigation */}
+              <div className="flex justify-between items-center mb-6 border-b border-gray-300 py-1">
+                <div className="flex items-center gap-2">
+                  <TemplateSelector
+                    selectedTemplate={resumeData.template}
+                    onChange={(template) =>
+                      setResumeData((prev) => ({ ...prev, template }))
+                    }
+                  />
+                  <ColorPicker
+                    selectedColor={resumeData.accent_color}
+                    onChange={(color) =>
+                      setResumeData((prev) => ({
+                        ...prev,
+                        accent_color: color,
+                      }))
+                    }
+                  />
                 </div>
 
                 <div className="flex items-center">
@@ -139,6 +219,7 @@ const ResumeBuilder = () => {
                   </button>
                 </div>
               </div>
+
               {/* Form Content */}
               <div className="space-y-6">
                 {activeSection.id === "personal" && (
@@ -267,6 +348,7 @@ const ResumeBuilder = () => {
                 </button>
               </div>
             </div>
+
             <ResumePreview
               data={resumeData}
               template={resumeData.template}
