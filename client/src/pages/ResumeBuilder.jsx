@@ -18,18 +18,18 @@ import {
 } from "lucide-react";
 import PersonalInfoForm from "../components/PersonalInfoForm";
 import ResumePreview from "../components/ResumePreview";
-//import TemplateSelector from "../components/TemplateSelector";
+import TemplateSelector from "../components/TemplateSelector";
 import ColorPicker from "../components/ColorPicker";
 import ProfessionalSummaryForm from "../components/ProfessionalSummaryForm";
 import ExperienceForm from "../components/ExperienceForm";
-//import EducationForm from "../components/EducationForm";
-//import ProjectForm from "../components/ProjectForm";
-//import SkillsForm from "../components/SkillsForm";
+import EducationForm from "../components/EducationForm";
+import ProjectForm from "../components/ProjectForm";
+import SkillsForm from "../components/SkillsForm";
 //import CertificationForm from "../components/CertificationForm";
 
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
-  const { token } = useSelector((state) => state.auth);
+  //const { token } = useSelector((state) => state.auth);
 
   const [resumeData, setResumeData] = useState({
     _id: "",
