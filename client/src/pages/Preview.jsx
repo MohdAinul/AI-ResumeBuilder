@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ResumePreview from "../components/ResumePreview";
 import { ArrowLeft, Loader } from "lucide-react";
-//import api from "../configs/api";
+import api from "../configs/api";
 
 const Preview = () => {
   const { resumeId } = useParams();
